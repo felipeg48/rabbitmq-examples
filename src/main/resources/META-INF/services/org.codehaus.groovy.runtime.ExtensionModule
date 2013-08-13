@@ -1,0 +1,4 @@
+moduleName=extension-module
+moduleVersion=1.0
+extensionClasses=com.groovy.utils.extensions.ByteExtension
+staticExtensionClasses=com.groovy.utils.extensions.DateStaticExtension

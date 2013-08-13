@@ -1,0 +1,20 @@
+apply plugin: 'groovy'
+
+
+sourceCompatibility = 1.7
+version = '1.0'
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'RabbitMQ Examples', 'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+	compile group: 'org.codehaus.groovy', name: 'groovy-all', version:'2.1.6'
+	compile group: 'com.rabbitmq', name: 'amqp-client', version: '3.1.4'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+}
