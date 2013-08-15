@@ -10,8 +10,8 @@ package com.rabbit.groovy.examples
  */
 class Producer extends RabbitConnection {
 	
-	void send(params){
-		channel.basicPublish(params.exchange,params.routingkey, params.msgproperties, params.msg)
+	void send(opts){
+		channel.basicPublish opts.exchange,opts.routingkey, opts.msgproperties, opts.msg
 	}
 	
 	
