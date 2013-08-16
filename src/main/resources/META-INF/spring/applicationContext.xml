@@ -9,15 +9,30 @@
 
 	<context:component-scan base-package="com.rabbit.spring.examples" />
 
+	<!-- RabbitMQ Simple configuration -->
+	<!-- 
 	<rabbit:connection-factory id="connectionFactory" host="localhost"/>
     <rabbit:template id="amqpTemplate" connection-factory="connectionFactory"/>
-    <rabbit:admin connection-factory="connectionFactory"/>
+    -->
     
-    
+    <!--  Examples for the Adapter -->
+	<!--
 	<bean id="adapter" class="org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter">
 		<constructor-arg name="delegate" ref="springConsumerAdapter" />
 	</bean>
     <rabbit:listener-container connection-factory="connectionFactory">
     	<rabbit:listener ref="adapter" queue-names="WorkQueue"/>
     </rabbit:listener-container>
+    -->
+    
+    <!--  RabbitMQ with SSL (without not sending the Client's certificate) -->
+    <!--
+    <bean id="connectionFactory" class="com.rabbitmq.client.ConnectionFactory" init-method="useSslProtocol">
+    	<property name="host" value="oracle1"/>
+    	<property name="port" value="5673"/> 
+    </bean>
+    <rabbit:connection-factory id="rabbitConnectionFactory" connection-factory="connectionFactory" />
+    <rabbit:template id="amqpTemplate" connection-factory="rabbitConnectionFactory"/>
+    -->
+    
 </beans>

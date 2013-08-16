@@ -65,4 +65,23 @@ class MainTest {
 		//Just run and wait
 		sleep 3000
 	}
+	
+	@Test
+	@Ignore
+	void simpleWithSSL(){
+		def producer = Thread.start{
+			MessageProperties props = new MessageProperties()
+			props.deliveryMode = MessageDeliveryMode.PERSISTENT
+			
+			def msg = "Hello World from Spring/Groovy with SSL [${Date.now()}]"
+			
+			springProducer.send exchange:"WorkExchange",routingkey:"",msgproperties:props,msg:msg.bytes
+		}
+		
+		def consumer = Thread.start{
+			springConsumer.consume queue:"WorkQueue"
+		}
+		
+		[producer,consumer]*.join()
+	}
 }

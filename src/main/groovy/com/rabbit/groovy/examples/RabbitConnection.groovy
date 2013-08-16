@@ -17,9 +17,32 @@ class RabbitConnection {
 	protected Connection connection
 	protected Channel channel
 	
-	RabbitConnection(){
+	RabbitConnection(opts){
+		if(opts.who)
+			println opts.who
+		
 		factory = new ConnectionFactory()
 		factory.host = "localhost"
+		
+		
+		if(opts.host){
+			println "Connecting to host: ${opts.host}"
+			factory.host = opts.host
+		}
+		
+		if(opts.port){
+			println "Connecting to port: ${opts.port}"
+			factory.port = opts.port
+		}
+		
+		if(opts.ssl_no_context){
+			factory.port = opts.port
+			factory.useSslProtocol()
+		}
+		if(opts.ssl_context){
+			factory.port = opts.port
+			factory.useSslProtocol(opts.ssl_context_provider)
+		}
 
 		connection = factory.newConnection()
 		channel = connection.createChannel()

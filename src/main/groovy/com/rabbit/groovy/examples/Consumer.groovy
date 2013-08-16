@@ -11,6 +11,10 @@ import com.rabbitmq.client.GetResponse
  */
 class Consumer extends RabbitConnection {
 
+	Consumer(opts){
+		super(opts)
+	}
+	
 	def consume(opts){
 		GetResponse response = channel.basicGet(opts.queue,opts.ack) 
 		if(!opts.ack){
@@ -32,6 +36,8 @@ class Consumer extends RabbitConnection {
 				channel.basicAck(response.envelope.deliveryTag, false)
 				println "Ack done"
 			}
+		}else{
+			println "Got message: ${response.body.toReadable()}"
 		}
 		
 	}
