@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
+	xmlns:int-groovy="http://www.springframework.org/schema/integration/groovy"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/amqp http://www.springframework.org/schema/integration/amqp/spring-integration-amqp-2.2.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-2.2.xsd
+		http://www.springframework.org/schema/integration/groovy http://www.springframework.org/schema/integration/groovy/spring-integration-groovy-2.2.xsd
+		http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit-1.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+
+    <!-- 
+	For this example is necessary to create:
+	Exchanges:
+	-name: fanoutExchange
+	-type: fanout
+	
+	-name: fanoutDLX
+	-type: fanout
+	
+	-name: fanoutDead
+	-type: fanout
+	
+	
+	Queues:
+	-name: fanoutQueue
+	-durable: true
+	
+	-name: fanoutQueueDLX
+	-durable: true
+	-x-message-ttl:	45000
+	-x-dead-letter-exchange: fanoutExchange
+	
+	
+	Bindings:
+	fanoutDLX -> fanoutQueueDLX
+	fanoutExchange -> fanoutQueue
+	 -->
+
+    
+	<!-- Spring -->
+	<context:component-scan base-package="com.rabbit.spring.integration.examples" />
+
+	<!-- Spring Integration Channels -->
+	<!-- AMQP Adapter: Producer -->
+	<int:channel id="toRabbit" />
+	<int-amqp:outbound-channel-adapter
+		channel="toRabbit" 
+		mapped-request-headers="retry"
+		amqp-template="amqpTemplate" 
+		exchange-name="fanoutExchange"
+		routing-key="" />
+
+	
+	<!-- AMQP Adapter: Consumer -->
+	<int:channel id="fromRabbit"/>
+	<int-amqp:inbound-channel-adapter
+		channel="fromRabbit" 
+		mapped-request-headers="retry"
+		queue-names="fanoutQueue" 
+		error-channel="errorChannel"
+		connection-factory="connectionFactory" />	
+	<int:service-activator input-channel="fromRabbit" ref="consumer" />
+	
+	
+	<!-- Error Channel -->
+	<int:router input-channel="errorChannel" ref="routerService" method="process"/>
+	
+	
+	<!-- AMQP Adapter: DLX -->	 
+	<int:channel id="tryAgain" />
+	<int:channel id="dlx" />
+	<int:transformer  input-channel="tryAgain" output-channel="dlx" ref="interceptorAdapter"/>
+	<int-amqp:outbound-channel-adapter
+		channel="dlx" 
+		mapped-request-headers="retry"
+		amqp-template="amqpTemplate" 
+		exchange-name="fanoutDLX"
+		routing-key="" />
+	
+	
+	<!-- Retry Ended -->
+	<int:channel id="bye"/>
+	<int-amqp:outbound-channel-adapter
+		channel="bye"
+		mapped-request-headers="retry"
+		amqp-template="amqpTemplate"
+		exchange-name="fanoutDead"/>
+	
+	<!-- RabbitMQ Setup -->
+	<rabbit:connection-factory id="connectionFactory" host="localhost" />
+	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory" />
+	<rabbit:admin connection-factory="connectionFactory" />
+
+
+	
+	
+	<!-- FOR LATER working with Headers -->
+	<!-- 
+	<int:header-value-router header-name="retry" input-channel="headerActivator">
+	 <int:mapping value="#{ &lt; 5}" channel="tryAgain"/>
+	 <int:mapping value="5" channel="bye"/>
+	</int:header-value-router>
+	-->
+	
+</beans>
